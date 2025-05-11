@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+        }
+        .success-notification {
+            animation: slideIn 0.3s ease-out forwards;
+            position: absolute;
+            top: 100px;
+            left: 0;
+            right: 0;
+            margin: auto;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .date-picker {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .error-border {
+            border-color: #ef4444 !important;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            background-color: #f8fafc;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.2s;
+        }
+        #successNotification {
+            width: 90%;
+            max-width: 500px;
+            padding: 16px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        #closeNotification {
+            width: 24px;
+            height: 24px;
+            background-color: #f3f4f6;
+            border-radius: 50%;
+            position: relative;
+        }
+        #closeNotification:before, #closeNotification:after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 2px;
+            background-color: #6b7280;
+            top: 11px;
+            left: 6px;
+        }
+        #closeNotification:before {
+            transform: rotate(45deg);
+        }
+        #closeNotification:after {
+            transform: rotate(-45deg);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <div id="loading" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+      <p class="text-lg font-semibold">Đang tải dữ liệu...</p>
+      <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+        <div id="progress-bar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <form id="form" class="container">
+    <div class="container">
+        <div>
+            <div><input type="date" id="transactionDate" class="date-picker text-center" name="date"></div>
+            <div>
+                <select id="transactionType" name="transaction">
+                    <option value="" selected disabled hidden>Giao dịch</option>
+                    <option>⬆️Tiền vào</option>
+                    <option>⬇️Tiền ra</option>
+                </select>
+            </div>
+            <div>
+                <select id="moneySource" name="source">
+                    <option value="" selected disabled hidden>Nguồn tiền</option>
+                    <option value="CASH">CASH</option>
+                    <option value="CREDIT">CREDIT</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <div>
+                <select id="transactionCategory" name="category" disabled>
+                    <option value="" selected disabled hidden>Mục giao dịch</option>
+                </select>
+                <div id="categoryCheck"></div>
+            </div>
+            <div id="transactionTypeContainer" class="relative hidden">
+                <select id="transactionTypeDetail" name="type">
+                    <option value="" selected disabled hidden>Loại giao dịch</option>
+                </select>
+                <div id="typeCheck"></div>
+            </div>
+            <div id="transactionItemContainer" class="relative hidden">
+                <select id="transactionItem" name="item">
+                    <option value="" selected disabled hidden>Khoản giao dịch</option>
+                </select>
+                <div id="itemCheck"></div>
+            </div>
+        </div>
+        <div class="relative"><input type="text" id="transactionDescription" placeholder="Nội dung giao dịch" name="description"></div>
+        <div class="relative">
+            <input type="number" id="transactionAmount" placeholder="Nhập số tiền" name="amount">
+            <div class="absolute"></div>
+        </div>
+        <div><button id="submitButton" disabled class="block cursor-not-allowed bg-gray-300"> Cập nhật giao dịch </button></div>
+    </div>
+  </form>
+
+  <div id="successNotification" class="fixed hidden success-notification">
+    <div class="flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-green-600">Ghi lại giao dịch thành công👏👏</h3>
+        <button id="closeNotification"></button>
+    </div>
+    <div class="space-y-2 text-sm">
+        <p id="successDate" class="flex"></p>
+        <p id="successType" class="flex"></p>
+        <p id="successCategory" class="flex"></p>
+        <p id="successAmount" class="flex"></p>
+        <p id="successSource" class="flex"></p>
+        <p id="successDescription" class="flex"></p>
+    </div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxx89a7MmgDElRNMExKZPWdvArqI8dvfHiN-kdp4xnmwWB_xO8d4sxiPhsLafM0XL1E/exec'; // Replace with your deployed web app URL
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadingDiv = document.getElementById('loading');
+        const progressBar = document.getElementById('progress-bar');
+        const dateInput = document.getElementById('transactionDate');
+        const typeSelect = document.getElementById('transactionType');
+        const sourceSelect = document.getElementById('moneySource');
+        const categorySelect = document.getElementById('transactionCategory');
+        const typeDetailSelect = document.getElementById('transactionTypeDetail');
+        const itemSelect = document.getElementById('transactionItem');
+        const descriptionInput = document.getElementById('transactionDescription');
+        const amountInput = document.getElementById('transactionAmount');
+        const submitButton = document.getElementById('submitButton');
+        const successNotification = document.getElementById('successNotification');
+        const closeNotificationButton = document.getElementById('closeNotification');
+        const categoryCheck = document.getElementById('categoryCheck');
+        const typeCheck = document.getElementById('typeCheck');
+        const itemCheck = document.getElementById('itemCheck');
+        const typeContainer = document.getElementById('transactionTypeContainer');
+        const itemContainer = document.getElementById('transactionItemContainer');
+        const successDateDisplay = document.getElementById('successDate');
+        const successTypeDisplay = document.getElementById('successType');
+        const successCategoryDisplay = document.getElementById('successCategory');
+        const successAmountDisplay = document.getElementById('successAmount');
+        const successSourceDisplay = document.getElementById('successSource');
+        const successDescriptionDisplay = document.getElementById('successDescription');
+
+        let categoryData = {};
+
+        const formatDate = (date) => date.toISOString().split('T')[0];
+        const formatDisplayDate = (dateString) => {
+            const parts = dateString.split('-');
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        };
+        const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN').format(amount) + ' VNĐ';
+        
+        const getCategoryName = (value) => value;
+        const getTypeName = (type) => type;
+        const getItemName = (item) => item;
+
+        const formElements = [dateInput, typeSelect, sourceSelect, categorySelect, typeDetailSelect, itemSelect, amountInput, descriptionInput];
+
+        const checkFormValidity = () => {
+            let isValid = true;
+            formElements.forEach(el => el.classList.remove('error-border'));
+            formElements.forEach(el => {
+                if (!el.disabled && !el.value) {
+                    el.classList.add('error-border');
+                    isValid = false;
+                }
+            });
+            return isValid;
+        };
+
+        const updateSubmitButton = () => {
+            submitButton.disabled = !checkFormValidity();
+            submitButton.classList.toggle('bg-indigo-600', !submitButton.disabled);
+            submitButton.classList.toggle('hover:bg-indigo-700', !submitButton.disabled);
+            submitButton.classList.toggle('cursor-pointer', !submitButton.disabled);
+            submitButton.classList.toggle('bg-gray-300', submitButton.disabled);
+            submitButton.classList.toggle('cursor-not-allowed', submitButton.disabled);
+        };
+
+        const resetDependentSelects = () => {
+            typeDetailSelect.innerHTML = '<option value="" selected disabled hidden>Loại giao dịch</option>';
+            typeDetailSelect.disabled = true;
+            itemSelect.innerHTML = '<option value="" selected disabled hidden>Khoản giao dịch</option>';
+            itemSelect.disabled = true;
+            itemContainer.classList.add('hidden');
+            typeContainer.classList.add('hidden');
+            categoryCheck.classList.add('hidden');
+            typeCheck.classList.add('hidden');
+            itemCheck.classList.add('hidden');
+        };
+
+        const loadCategoryData = () => {
+            loadingDiv.style.display = 'block';
+            progressBar.style.width = '0%';
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = `${Math.min(progress, 90)}%`;
+            }, 100);
+
+            fetch(WEB_APP_URL)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    clearInterval(interval);
+                    categoryData = data;
+                    progressBar.style.width = '100%';
+                    setTimeout(() => {
+                        loadingDiv.style.display = 'none';
+                    }, 300);
+                })
+                .catch(error => {
+                    clearInterval(interval);
+                    console.error('Error loading category data:', error);
+                    alert('Failed to load category data. Please try again.');
+                    loadingDiv.style.display = 'none';
+                });
+        };
+
+        let submissionDate = formatDate(new Date());
+        dateInput.value = submissionDate;
+
+        typeSelect.addEventListener('change', function() {
+            const selectedType = this.value;
+            categorySelect.innerHTML = '<option value="" selected disabled hidden>Mục giao dịch</option>';
+            if (selectedType && categoryData[selectedType]) {
+                const data = categoryData[selectedType];
+                Object.keys(data).forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categorySelect.appendChild(option);
+                });
+                categorySelect.disabled = false;
+            } else {
+                categorySelect.disabled = true;
+            }
+            resetDependentSelects();
+            updateSubmitButton();
+        });
+
+        categorySelect.addEventListener('change', function() {
+            const transactionType = typeSelect.value;
+            const categoryValue = this.value;
+            resetDependentSelects();
+            if (transactionType && categoryValue && categoryData[transactionType] && categoryData[transactionType][categoryValue]) {
+                categoryCheck.classList.remove('hidden');
+                const types = categoryData[transactionType][categoryValue].types;
+                typeDetailSelect.innerHTML = '<option value="" selected disabled hidden>Loại giao dịch</option>';
+                Object.keys(types).forEach(typeKey => {
+                    const option = document.createElement('option');
+                    option.value = typeKey;
+                    option.textContent = typeKey;
+                    typeDetailSelect.appendChild(option);
+                });
+                typeContainer.classList.remove('hidden');
+                typeDetailSelect.disabled = false;
+            }
+            updateSubmitButton();
+        });
+
+        typeDetailSelect.addEventListener('change', function() {
+            const transactionType = typeSelect.value;
+            const categoryValue = categorySelect.value;
+            const typeValue = this.value;
+            itemSelect.innerHTML = '<option value="" selected disabled hidden>Khoản giao dịch</option>';
+            itemSelect.disabled = true;
+            itemContainer.classList.add('hidden');
+            if (transactionType && categoryValue && typeValue &&
+                categoryData[transactionType] &&
+                categoryData[transactionType][categoryValue] &&
+                categoryData[transactionType][categoryValue].types[typeValue]) {
+                typeCheck.classList.remove('hidden');
+                const items = categoryData[transactionType][categoryValue].types[typeValue].items;
+                items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.value;
+                    option.textContent = item.name;
+                    itemSelect.appendChild(option);
+                });
+                itemContainer.classList.remove('hidden');
+                itemSelect.disabled = false;
+            } else {
+                typeCheck.classList.add('hidden');
+            }
+            updateSubmitButton();
+        });
+
+        itemSelect.addEventListener('change', function() {
+            itemCheck.classList.toggle('hidden', !this.value);
+            updateSubmitButton();
+        });
+
+        formElements.forEach(el => el.addEventListener('input', updateSubmitButton));
+
+        document.getElementById("form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            if (!checkFormValidity()) {
+                return;
+            }
+            submitButton.disabled = true;
+            var formData = new FormData(this);
+            var keyValuePairs = [];
+            for (var pair of formData.entries()) {
+                keyValuePairs.push(pair[0] + "=" + encodeURIComponent(pair[1]));
+            }
+            var formDataString = keyValuePairs.join("&");
+
+            fetch(WEB_APP_URL, {
+                redirect: "follow",
+                method: "POST",
+                body: formDataString,
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8",
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    const date = dateInput.value;
+                    const type = typeSelect.value;
+                    const typeText = typeSelect.options[typeSelect.selectedIndex].text;
+                    const source = sourceSelect.value;
+                    const category = categorySelect.value;
+                    const typeDetail = typeDetailSelect.value;
+                    const item = itemSelect.value;
+                    const amount = amountInput.value;
+                    const description = descriptionInput.value || '';
+
+                    successDateDisplay.innerHTML = `<span class="font-medium mr-2">Thời gian:</span> <span>${formatDisplayDate(date)}</span>`;
+                    successTypeDisplay.innerHTML = `<span class="font-medium mr-2">Giao dịch:</span> <span>${typeText}</span>`;
+                    successCategoryDisplay.innerHTML = `<span class="font-medium mr-2">Khoản tiền:</span> <span>${category} - ${typeDetail} - ${item}</span>`;
+                    successAmountDisplay.innerHTML = `<span class="font-medium mr-2">Số tiền:</span> <span>${formatCurrency(parseInt(amount))}</span>`;
+                    successSourceDisplay.innerHTML = `<span class="font-medium mr-2">Nguồn tiền:</span> <span>${source}</span>`;
+                    successDescriptionDisplay.innerHTML = `<span class="font-medium mr-2">Nội dung:</span> <span>${description}</span>`;
+
+                    successNotification.classList.remove('hidden');
+                    setTimeout(() => {
+                        successNotification.classList.add('hidden');
+                        resetForm();
+                    }, 3000);
+                } else {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+            })
+            .catch(error => {
+                console.error("Error submitting form:", error);
+                alert("There was an error submitting your form: " + error.message);
+                submitButton.disabled = false;
+            });
+        });
+
+        closeNotificationButton.addEventListener('click', () => successNotification.classList.add('hidden'));
+
+        function resetForm() {
+            typeSelect.value = '';
+            sourceSelect.value = '';
+            categorySelect.value = '';
+            typeDetailSelect.value = '';
+            itemSelect.value = '';
+            descriptionInput.value = '';
+            amountInput.value = '';
+            formElements.forEach(el => el.classList.remove('error-border'));
+            resetDependentSelects();
+            categorySelect.disabled = true;
+            updateSubmitButton();
+            successNotification.classList.add('hidden');
+        }
+
+        loadCategoryData();
+    });
+  </script>
+</body>
+</html>
