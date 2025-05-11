@@ -11,13 +11,42 @@
             font-family: 'Poppins', sans-serif;
             background-color: #f8fafc;
         }
+        .dropdown-container {
+            position: relative;
+        }
+        .dropdown-container::after {
+            content: "⮟";
+            font-size: 12px;
+            color: #64748b;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        .success-check {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #10b981;
+            pointer-events: none;
+        }
         .success-notification {
             animation: slideIn 0.3s ease-out forwards;
             position: absolute;
-            top: 100px;
-            left: 0;
-            right: 0;
+            top: 110px;
+            bottom: 100px;
+            left: 0px;
+            right: 0px;
             margin: auto;
+        }
+        #successNotification {
+            padding: 15px;
+            margin-bottom: 340px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
         }
         @keyframes slideIn {
             from {
@@ -36,126 +65,141 @@
         .error-border {
             border-color: #ef4444 !important;
         }
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        input, select {
+        .form-input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            background-color: #f8fafc;
+            padding: 0.45rem;
+            border-width: 1px;
+            border-color: #d1d5db;
+            border-radius: 0.5rem;
+            outline: none;
+            background-color: #fff;
+            font-size: 1rem;
+            color: #374151;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: border-color 0.1s ease-in-out, shadow-sm 0.1s ease-in-out;
         }
-        button {
+        .form-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+        .form-select {
             width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            color: white;
-            transition: all 0.2s;
+            padding: 0.5rem;
+            border-width: 1px;
+            border-color: #d1d5db;
+            border-radius: 0.5rem;
+            outline: none;
+            background-color: #fff;
+            font-size: 1rem;
+            color: #374151;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: border-color 0.1s ease-in-out, shadow-sm 0.1s ease-in-out;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
         }
-        #successNotification {
-            width: 90%;
-            max-width: 500px;
-            padding: 16px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        .form-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
         }
-        #closeNotification {
-            width: 24px;
-            height: 24px;
-            background-color: #f3f4f6;
-            border-radius: 50%;
-            position: relative;
-        }
-        #closeNotification:before, #closeNotification:after {
-            content: '';
-            position: absolute;
-            width: 12px;
-            height: 2px;
-            background-color: #6b7280;
-            top: 11px;
-            left: 6px;
-        }
-        #closeNotification:before {
-            transform: rotate(45deg);
-        }
-        #closeNotification:after {
-            transform: rotate(-45deg);
+        .form-select option:disabled {
+            color: #9ca3af;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
+
   <div id="loading" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg">
-      <p class="text-lg font-semibold">Đang tải dữ liệu...</p>
+      <p class="text-lg font-semibold">Loading...</p>
       <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
         <div id="progress-bar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
       </div>
     </div>
   </div>
 
-  <form id="form" class="container">
-    <div class="container">
-        <div>
-            <div><input type="date" id="transactionDate" class="date-picker text-center" name="date"></div>
-            <div>
-                <select id="transactionType" name="transaction">
+  <form id="form" class="container m-3">
+    <div class="container mx-auto px-4 py-6 max-w-md">
+        <div class="text-center mb-4">
+            <h1 class="text-3xl font-bold text-indigo-600">Better Me</h1>
+            <p class="text-gray-500 mt-0">Manage your finances better</p>
+        </div>
+        <div class="flex gap-2 mb-3">
+            <div class="w-[9.5rem]">
+              <input type="date" id="transactionDate" class="form-input date-picker text-center" name="Thời gian">
+            </div>
+            <div class="flex-1 relative dropdown-container">
+                <select id="transactionType" class="form-select" name="transaction">
                     <option value="" selected disabled hidden>Giao dịch</option>
                     <option>⬆️Tiền vào</option>
                     <option>⬇️Tiền ra</option>
                 </select>
             </div>
-            <div>
-                <select id="moneySource" name="source">
+            <div class="flex-1 relative dropdown-container">
+                <select id="moneySource" class="form-select" name="Nguồn tiền">
                     <option value="" selected disabled hidden>Nguồn tiền</option>
                     <option value="CASH">CASH</option>
                     <option value="CREDIT">CREDIT</option>
                 </select>
             </div>
         </div>
-        <div>
-            <div>
-                <select id="transactionCategory" name="category" disabled>
+
+        <div class="border border-gray-200 rounded-lg p-3 mb-3 bg-white shadow-sm">
+            <div class="mb-3 relative dropdown-container">
+                <select id="transactionCategory" class="form-select px-9" name="category" disabled>
                     <option value="" selected disabled hidden>Mục giao dịch</option>
                 </select>
-                <div id="categoryCheck"></div>
+                <i class="fas fa-exchange-alt absolute left-3 top-3.5 text-indigo-500"></i>
+                <div id="categoryCheck" class="success-check hidden">
+                    <i class="fas fa-check-circle"></i>
+                </div>
             </div>
-            <div id="transactionTypeContainer" class="relative hidden">
-                <select id="transactionTypeDetail" name="type">
+            <div id="transactionTypeContainer" class="mb-3 ml-5 relative dropdown-container hidden">
+                <select id="transactionTypeDetail" disabled class="form-select px-9" name="type">
                     <option value="" selected disabled hidden>Loại giao dịch</option>
                 </select>
-                <div id="typeCheck"></div>
+                <i class="fas fa-tags absolute left-3 top-3.5 text-indigo-500"></i>
+                <div id="typeCheck" class="success-check hidden">
+                    <i class="fas fa-check-circle"></i>
+                </div>
             </div>
-            <div id="transactionItemContainer" class="relative hidden">
-                <select id="transactionItem" name="item">
+            <div id="transactionItemContainer" class="ml-10 relative dropdown-container hidden">
+                <select id="transactionItem" disabled class="form-select px-9" name="item">
                     <option value="" selected disabled hidden>Khoản giao dịch</option>
                 </select>
-                <div id="itemCheck"></div>
+                <i class="fas fa-tag absolute left-3 top-3.5 text-indigo-500"></i>
+                <div id="itemCheck" class="success-check hidden">
+                    <i class="fas fa-check-circle"></i>
+                </div>
             </div>
         </div>
-        <div class="relative"><input type="text" id="transactionDescription" placeholder="Nội dung giao dịch" name="description"></div>
-        <div class="relative">
-            <input type="number" id="transactionAmount" placeholder="Nhập số tiền" name="amount">
-            <div class="absolute"></div>
+
+        <div class="relative mb-3">
+          <input type="text" id="transactionDescription" placeholder="Nội dung giao dịch" class="form-input px-9" name="Nội dung thanh toán">
+          <i class="fas fa-align-left absolute left-3 top-3.5 text-indigo-500"></i>
         </div>
-        <div><button id="submitButton" disabled class="block cursor-not-allowed bg-gray-300"> Cập nhật giao dịch </button></div>
+        <div class="relative mb-6">
+            <input type="number" id="transactionAmount" placeholder="Nhập số tiền" class="form-input px-9" name="Số tiền phát sinh">
+            <i class="fas fa-coins absolute left-3 top-3.5 text-indigo-500"></i>
+            <div class="absolute right-3 top-2 text-gray-400">₫</div>
+        </div>
+        <div class="mb-8">
+            <button id="submitButton" disabled class="block w-fit mx-auto py-3 px-3 bg-gray-300 text-white font-medium rounded-lg cursor-not-allowed">
+                <i class="fas fa-save mr-2"></i> Cập nhật giao dịch
+            </button>
+        </div>
     </div>
   </form>
 
-  <div id="successNotification" class="fixed hidden success-notification">
-    <div class="flex justify-between items-center">
-        <h3 class="text-lg font-semibold text-green-600">Ghi lại giao dịch thành công👏👏</h3>
-        <button id="closeNotification"></button>
+  <div id="successNotification" class="fixed bottom-0 left-0 right-0 bg-white p-6 rounded-t-2xl shadow-lg max-w-md mx-auto hidden success-notification">
+
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-green-600">Ghi lại giao dịch thành công👏👏</h3>
+        <button id="closeNotification" class="text-gray-500">
+          <i class="fas fa-times"></i>
+        </button>
     </div>
-    <div class="space-y-2 text-sm">
+    <div class="space-y-2 text-sm text-gray-700">
         <p id="successDate" class="flex"></p>
         <p id="successType" class="flex"></p>
         <p id="successCategory" class="flex"></p>
@@ -166,7 +210,7 @@
   </div>
 
   <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxx89a7MmgDElRNMExKZPWdvArqI8dvfHiN-kdp4xnmwWB_xO8d4sxiPhsLafM0XL1E/exec'; // Replace with your deployed web app URL
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyGqndGFqFvLp2P6mrPxj6LhWuJiy3jNtAH1dXVdaMrKWekl-dpQo8W9zA7CnMOhqkROg/exec';
 
     document.addEventListener('DOMContentLoaded', function() {
         const loadingDiv = document.getElementById('loading');
@@ -202,7 +246,6 @@
             return `${parts[2]}/${parts[1]}/${parts[0]}`;
         };
         const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN').format(amount) + ' VNĐ';
-        
         const getCategoryName = (value) => value;
         const getTypeName = (type) => type;
         const getItemName = (item) => item;
@@ -373,7 +416,7 @@
             })
             .then(response => {
                 if (response.ok) {
-                    const date = dateInput.value;
+                    const date = formatDisplayDate(dateInput.value);
                     const type = typeSelect.value;
                     const typeText = typeSelect.options[typeSelect.selectedIndex].text;
                     const source = sourceSelect.value;
@@ -422,7 +465,6 @@
             updateSubmitButton();
             successNotification.classList.add('hidden');
         }
-
         loadCategoryData();
     });
   </script>
