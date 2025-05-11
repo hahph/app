@@ -416,7 +416,7 @@
             })
             .then(response => {
                 if (response.ok) {
-                    const date = formatDisplayDate(dateInput.value);
+                    const date = dateInput.value;
                     const type = typeSelect.value;
                     const typeText = typeSelect.options[typeSelect.selectedIndex].text;
                     const source = sourceSelect.value;
