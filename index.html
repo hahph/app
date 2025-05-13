@@ -286,13 +286,13 @@
         };
 
         const loadCategoryData = () => {
-            loadingDiv.style.display = 'block';
+            loadingDiv.style.display = 'flex';
             progressBar.style.width = '0%';
             let progress = 0;
             const interval = setInterval(() => {
                 progress += 10;
                 progressBar.style.width = `${Math.min(progress, 90)}%`;
-            }, 100);
+            }, 900);
 
             fetch(WEB_APP_URL)
                 .then(response => {
@@ -307,7 +307,7 @@
                     progressBar.style.width = '100%';
                     setTimeout(() => {
                         loadingDiv.style.display = 'none';
-                    }, 300);
+                    }, 100);
                 })
                 .catch(error => {
                     clearInterval(interval);
