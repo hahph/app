@@ -210,7 +210,7 @@
   </div>
 
   <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyJCowMniM30dws6vv-Ymualq3u_DY_MicaMX4hH2E8HM570MOvCMRRzlZSl-DUcF886A/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby2EqQq0R-i7iak79HM-0r1BptlypilSp8yKn2x4SWrB_nM8RVQjdoPSYF08b0j39vEfQ/exec';
 
     document.addEventListener('DOMContentLoaded', function() {
         const loadingDiv = document.getElementById('loading');
@@ -292,7 +292,7 @@
             const interval = setInterval(() => {
                 progress += 10;
                 progressBar.style.width = `${Math.min(progress, 90)}%`;
-            }, 900);
+            }, 100);
 
             fetch(WEB_APP_URL)
                 .then(response => {
@@ -307,7 +307,7 @@
                     progressBar.style.width = '100%';
                     setTimeout(() => {
                         loadingDiv.style.display = 'none';
-                    }, 100);
+                    }, 300);
                 })
                 .catch(error => {
                     clearInterval(interval);
@@ -325,12 +325,14 @@
             categorySelect.innerHTML = '<option value="" selected disabled hidden>Mục giao dịch</option>';
             if (selectedType && categoryData[selectedType]) {
                 const data = categoryData[selectedType];
+                const fragment = document.createDocumentFragment();
                 Object.keys(data).forEach(category => {
                     const option = document.createElement('option');
                     option.value = category;
                     option.textContent = category;
-                    categorySelect.appendChild(option);
+                    fragment.appendChild(option);
                 });
+                categorySelect.appendChild(fragment);
                 categorySelect.disabled = false;
             } else {
                 categorySelect.disabled = true;
@@ -347,12 +349,14 @@
                 categoryCheck.classList.remove('hidden');
                 const types = categoryData[transactionType][categoryValue].types;
                 typeDetailSelect.innerHTML = '<option value="" selected disabled hidden>Loại giao dịch</option>';
+                const fragment = document.createDocumentFragment();
                 Object.keys(types).forEach(typeKey => {
                     const option = document.createElement('option');
                     option.value = typeKey;
                     option.textContent = typeKey;
-                    typeDetailSelect.appendChild(option);
+                    fragment.appendChild(option);
                 });
+                typeDetailSelect.appendChild(fragment);
                 typeContainer.classList.remove('hidden');
                 typeDetailSelect.disabled = false;
             }
@@ -372,12 +376,14 @@
                 categoryData[transactionType][categoryValue].types[typeValue]) {
                 typeCheck.classList.remove('hidden');
                 const items = categoryData[transactionType][categoryValue].types[typeValue].items;
+                const fragment = document.createDocumentFragment();
                 items.forEach(item => {
                     const option = document.createElement('option');
                     option.value = item.value;
                     option.textContent = item.name;
-                    itemSelect.appendChild(option);
+                    fragment.appendChild(option);
                 });
+                itemSelect.appendChild(fragment);
                 itemContainer.classList.remove('hidden');
                 itemSelect.disabled = false;
             } else {
